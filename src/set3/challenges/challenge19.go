@@ -6,7 +6,7 @@ import (
     "mtsn"
 )
 
-var cleartexts [40]string = [...]string{
+var challenge19Cleartexts [40]string = [...]string{
     "SSBoYXZlIG1ldCB0aGVtIGF0IGNsb3NlIG9mIGRheQ==",
     "Q29taW5nIHdpdGggdml2aWQgZmFjZXM=",
     "RnJvbSBjb3VudGVyIG9yIGRlc2sgYW1vbmcgZ3JleQ==",
@@ -49,6 +49,23 @@ var cleartexts [40]string = [...]string{
     "QSB0ZXJyaWJsZSBiZWF1dHkgaXMgYm9ybi4=",
 }
 
+func makeTexts(nonce []byte, key []byte, cleartexts []string) ([][]byte, int) {
+    output := make([][]byte, len(cleartexts))
+    longestText := 0
+
+    for i, line := range cleartexts {
+        text := mtsn.DecodeBase64(line)
+        encoded := mtsn.CtrCoding(nonce, key, text)
+        output[i] = encoded
+
+        if len(encoded) > longestText {
+            longestText = len(encoded)
+        }
+    }
+
+    return output, longestText
+}
+
 func guessAtPosition(texts [][]byte, pos int) uint8 {
     var textBuffer bytes.Buffer
     for _, line := range texts {
@@ -72,20 +89,10 @@ var cheats map[int][2]byte = map[int][2]byte {
 }
 
 func Challenge19() {
-    longestText := 0
-    texts := make([][]byte, len(cleartexts))
     nonce := []byte("\x00\x00\x00\x00\x00\x00\x00\x00")
     key := mtsn.GenerateRandomKey()
+    texts, longestText := makeTexts(nonce, key, challenge19Cleartexts[0:len(challenge19Cleartexts)])
 
-    for i, line := range cleartexts {
-        text := mtsn.DecodeBase64(line)
-        encoded := mtsn.CtrCoding(nonce, key, text)
-        texts[i] = encoded
-
-        if len(encoded) > longestText {
-            longestText = len(encoded)
-        }
-    }
     solution := make([]byte, longestText)
 
     for pos, cheat := range cheats {
