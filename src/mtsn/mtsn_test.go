@@ -6,29 +6,6 @@ import (
 	"bytes"
 )
 
-func TestSplitStringIntoList(t *testing.T) {
-    parts := SplitStringIntoList("abcdef", 3);
-
-    if (parts[0] != "abc") {
-    	t.Log("First part is", parts[0])
-    	t.Fail()
-    }
-    if (parts[1] != "def") {
-    	t.Log("Second part is %s", parts[1])
-    	t.Fail()
-    }
-
-    parts = SplitStringIntoList("abcde", 3)
-    if (parts[0] != "abc") {
-    	t.Log("First part is", parts[0])
-    	t.Fail()
-    }
-    if (parts[1] != "de") {
-    	t.Log("Second part is", parts[1])
-    	t.Fail()
-    }
-}
-
 func TestPadPkcs7(t *testing.T) {
 	exampleString := []byte("YELLOW SUBMARINE");
 	padded := PadPkcs7(exampleString);
@@ -58,26 +35,82 @@ func TestECBMode(t *testing.T) {
 	decrypted, err := DecryptAesEbc(key, text)
 
 	if (err != nil) {
-		t.Log("Error decrypting:", err)
-		t.FailNow()
+		t.Fatal("Error decrypting:", err)
 	}
 
 	if (! bytes.Equal(cleartext, decrypted)) {
-		t.Log("Decrypted cleartext as ", strconv.Quote(string(decrypted)))
-		t.Fail()
+		t.Errorf("Decrypted cleartext as %q", decrypted)
 	}
 
 	cleartext = PadPkcs7([]byte("Hello world, here I am again."))
 	encrypted, err := EncryptAesEbc(key, cleartext)
 
 	if err != nil {
-		t.Log("Error encrypting:", err)
-		t.FailNow()
+		t.Error("Error encrypting:", err)
 	}
 	decrypted, err = DecryptAesEbc(key, encrypted)
 
 	if (! bytes.Equal(cleartext, decrypted)) {
-		t.Log("Decrypted cleartext as ", strconv.Quote(string(decrypted)))
-		t.Fail()
+		t.Errorf("Decrypted cleartext as %q", decrypted)
 	}
 }
+
+// let test_little_endian_64 () =
+//     let t x = Bytes.to_string (Matasano.little_endian_64 x)
+//     in
+//     assert ("\001\000\000\000\000\000\000\000" = (t 1));
+//     assert ("\002\000\000\000\000\000\000\000" = (t 2));
+// ;;
+
+// func TestLittleEndian64(t *testing.T) {
+// 	encoded := LittleEndian64(1)
+// 	if ! bytes.Equal(encoded, []byte("\x01\x00\x00\x00\x00\x00\x00\x00")) {
+// 		t.Errorf("1 encoded as %q", encoded)
+// 	}
+
+// 	encoded = LittleEndian64(257)
+// 	if ! bytes.Equal(encoded, []byte("\x01\x01\x00\x00\x00\x00\x00\x00")) {
+// 		t.Errorf("257 encoded as %q", encoded)
+// 	}
+// }
+
+func TestCtrStream(t *testing.T) {
+	nonce := []byte("\x01\x02\x03\x04\x05\x06\x07\x08")
+	key := []byte("YELLOW SUBMARINE")
+	expected := make([]byte, 16)
+
+	stream := ctrStream(nonce, key, 0)
+	decoded, err := DecryptAesEbc(key, stream)
+	if (err != nil) {
+		t.Fatalf("Error in decrtypting: %s", err)
+	}
+
+	copy(expected, nonce)
+	copy(expected[8:16], []byte("\x00\x00\x00\x00\x00\x00\x00\x00"))
+	if ! bytes.Equal(decoded, expected) {
+		t.Errorf("Decoded is equal to %q", decoded)
+	}
+
+	stream = ctrStream(nonce, key, 1)
+	decoded, err = DecryptAesEbc(key, stream)
+	if (err != nil) {
+		t.Fatalf("Error in decrtypting: %s", err)
+	}
+
+	copy(expected[8:16], []byte("\x01\x00\x00\x00\x00\x00\x00\x00"))
+	if ! bytes.Equal(decoded, expected) {
+		t.Errorf("Decoded is equal to %q", decoded)
+	}
+
+	stream = ctrStream(nonce, key, 257)
+	decoded, err = DecryptAesEbc(key, stream)
+	if (err != nil) {
+		t.Fatalf("Error in decrtypting: %s", err)
+	}
+
+	copy(expected[8:16], []byte("\x01\x01\x00\x00\x00\x00\x00\x00"))
+	if ! bytes.Equal(decoded, expected) {
+		t.Errorf("Decoded is equal to %q", decoded)
+	}
+}
+
