@@ -149,9 +149,9 @@ func Challenge17() {
         str := mtsn.DecodeBase64(randomStrings[i])
 
         if bytes.Equal(decoded, str) {
-            fmt.Println("Picked string:", i)
+            fmt.Println("Challenge 17: Picked string:", i)
             return
         }
     }
-    fmt.Println("Cannot match strings")
+    fmt.Println("Challenge 17: Cannot match strings")
 }

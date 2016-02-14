@@ -12,5 +12,5 @@ func Challenge18() {
 
 	encrypted := mtsn.DecodeBase64(encryptedBase64)
 
-	fmt.Printf("Decrypted %q\n", mtsn.CtrCoding(nonce, key, encrypted))
+	fmt.Printf("Challenge 18: Decrypted %q\n", mtsn.CtrCoding(nonce, key, encrypted))
 }

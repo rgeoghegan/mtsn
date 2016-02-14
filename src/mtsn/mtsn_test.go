@@ -4,6 +4,7 @@ import (
 	"testing"
 	"strconv"
 	"bytes"
+	"math"
 )
 
 func TestPadPkcs7(t *testing.T) {
@@ -27,6 +28,13 @@ func TestPadPkcs7(t *testing.T) {
 		t.Fail()	
 	}
 }
+
+func TestScoreAlphabet(t *testing.T) {
+	score := ScoreAlphabet("abcdefghijklmnopqrstuvwxyz")
+	if math.Abs(score - 0.204889093826955) > 0.0000001 {
+		t.Errorf("Got score of %f\n", score)
+	}
+}	
 
 func TestECBMode(t *testing.T) {
 	key := []byte("YELLOW SUBMARINE")
@@ -54,25 +62,6 @@ func TestECBMode(t *testing.T) {
 		t.Errorf("Decrypted cleartext as %q", decrypted)
 	}
 }
-
-// let test_little_endian_64 () =
-//     let t x = Bytes.to_string (Matasano.little_endian_64 x)
-//     in
-//     assert ("\001\000\000\000\000\000\000\000" = (t 1));
-//     assert ("\002\000\000\000\000\000\000\000" = (t 2));
-// ;;
-
-// func TestLittleEndian64(t *testing.T) {
-// 	encoded := LittleEndian64(1)
-// 	if ! bytes.Equal(encoded, []byte("\x01\x00\x00\x00\x00\x00\x00\x00")) {
-// 		t.Errorf("1 encoded as %q", encoded)
-// 	}
-
-// 	encoded = LittleEndian64(257)
-// 	if ! bytes.Equal(encoded, []byte("\x01\x01\x00\x00\x00\x00\x00\x00")) {
-// 		t.Errorf("257 encoded as %q", encoded)
-// 	}
-// }
 
 func TestCtrStream(t *testing.T) {
 	nonce := []byte("\x01\x02\x03\x04\x05\x06\x07\x08")

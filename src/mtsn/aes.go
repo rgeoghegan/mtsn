@@ -96,7 +96,7 @@ func CtrCoding(nonce []byte, key []byte, text []byte) []byte {
     *  key: 16 bytes
     *  text: as long as you want
     *
-    *  produces the ctr-encoded version of the text
+    *  produces the ctr-encoded/decoded version of the text
     */
     output := make([]byte, len(text))
     output_i := 0
