@@ -41,9 +41,10 @@ func Challenge22() {
 
 	guess, err := findSeed(randomNumber)
 	if err != nil {
+		fmt.Print("Challenge 22:")
 		fmt.Println(err)
 	} else {
-		fmt.Printf("My guess of seed being %d is %v\n", guess, guess == seed)
+		fmt.Printf("Challenge 22: My guess of seed being %d is %v\n", guess, guess == seed)
 	}
 }
 

@@ -105,28 +105,28 @@ func TestCtrStream(t *testing.T) {
 
 func TestGenerator(t *testing.T) {
 	state := Generator(42)
-	passes := state.index == 624
-	passes = passes && state.mt[0] == 42
-	passes = passes && state.mt[1] == 0xb93c8a93
-	passes = passes && state.mt[2] == 0x71014437
-	passes = passes && state.mt[state.index - 1] == 0x197b52a
+	passes := state.Index == 624
+	passes = passes && state.Mt[0] == 42
+	passes = passes && state.Mt[1] == 0xb93c8a93
+	passes = passes && state.Mt[2] == 0x71014437
+	passes = passes && state.Mt[state.Index - 1] == 0x197b52a
 
 	if ! passes {
 		t.Errorf("Index %v, state values are 0x%x, 0x%x, 0x%x and 0x%x",
-			state.index, state.mt[0], state.mt[1], state.mt[2], state.mt[state.index - 1])
+			state.Index, state.Mt[0], state.Mt[1], state.Mt[2], state.Mt[state.Index - 1])
 	}
 }
 
 func TestTwist(t *testing.T) {
 	state := Generator(42)
 	state.Twist()
-	passes := state.index == 0
-	passes = passes && 0x2b26e943 == state.mt[0]
-	passes = passes && 0xf3ac425f == state.mt[n - 1];
+	passes := state.Index == 0
+	passes = passes && 0x2b26e943 == state.Mt[0]
+	passes = passes && 0xf3ac425f == state.Mt[n - 1];
 
 	if ! passes {
 		t.Errorf("Index %v, state values are [0]: 0x%x, [%d]: 0x%x",
-			state.index, state.mt[0], n, state.mt[n-1])
+			state.Index, state.Mt[0], n, state.Mt[n-1])
 	}
 }
 
