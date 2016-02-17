@@ -46,9 +46,11 @@ SETS.each do |n|
 	task :build => n
 	run_set = "run#{n}".to_sym
 
+	desc "Run set ##{n}"
 	task run_set => [:build] do
 		sh "./#{n}"
 	end
+	p run_set
 	task :run => run_set
 
 	task :clean do

@@ -103,3 +103,69 @@ func TestCtrStream(t *testing.T) {
 	}
 }
 
+func TestGenerator(t *testing.T) {
+	state := Generator(42)
+	passes := state.index == 624
+	passes = passes && state.mt[0] == 42
+	passes = passes && state.mt[1] == 0xb93c8a93
+	passes = passes && state.mt[2] == 0x71014437
+	passes = passes && state.mt[state.index - 1] == 0x197b52a
+
+	if ! passes {
+		t.Errorf("Index %v, state values are 0x%x, 0x%x, 0x%x and 0x%x",
+			state.index, state.mt[0], state.mt[1], state.mt[2], state.mt[state.index - 1])
+	}
+}
+
+func TestTwist(t *testing.T) {
+	state := Generator(42)
+	state.Twist()
+	passes := state.index == 0
+	passes = passes && 0x2b26e943 == state.mt[0]
+	passes = passes && 0xf3ac425f == state.mt[n - 1];
+
+	if ! passes {
+		t.Errorf("Index %v, state values are [0]: 0x%x, [%d]: 0x%x",
+			state.index, state.mt[0], n, state.mt[n-1])
+	}
+}
+
+/*
+let test_extract () =
+    let state = generator 42
+    in
+    let (x, state) = extract_number state in
+    assert (0x5fe1dc66 == x);
+    let (x, state) = extract_number state in
+    assert (0xcbea3db3 == x);
+
+    let rec iter n (x, state) =
+        if n == 0
+        then x
+        else iter (n - 1) (extract_number state)
+    in
+    assert (0x1997f4d6 == (iter 10 (0, state)))
+;;
+*/
+func TestExtract(t *testing.T) {
+	state := Generator(42)
+	
+	value := state.Extract()
+	if (value != 0x5fe1dc66) {
+		t.Errorf("First extracted number is 0x%x", value)
+	}
+
+	value = state.Extract()
+	if (value != 0xcbea3db3) {
+		t.Errorf("Second extracted number is 0x%x", value)
+	}
+
+	for i := 0; i < 9; i++ {
+		state.Extract()
+	}
+
+	value = state.Extract()
+	if (value != 0x1997f4d6) {
+		t.Errorf("Eleventh extracted number is 0x%x", value)
+	}
+}
