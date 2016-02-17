@@ -2,9 +2,7 @@ package set3
 
 import (
     "fmt"
-    "crypto/rand"
     "errors"
-    "math/big"
     "mtsn"
     "bytes"
 )
@@ -29,12 +27,7 @@ type Oracle struct {
 }
 
 func createOracle() *Oracle {
-    index, err := rand.Int(rand.Reader, big.NewInt(int64(len(randomStrings))))
-    if (err != nil) {panic(err)}
-
-    cleartext := mtsn.DecodeBase64(randomStrings[index.Int64()])
-    if (err != nil) {panic(err)}
-
+    cleartext := mtsn.DecodeBase64(randomStrings[mtsn.RandomNumber(0, len(randomStrings))])
     padded := mtsn.PadPkcs7([]byte(cleartext))
     oracle := &Oracle{
          mtsn.GenerateRandomKey(),

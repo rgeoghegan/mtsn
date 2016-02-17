@@ -130,23 +130,6 @@ func TestTwist(t *testing.T) {
 	}
 }
 
-/*
-let test_extract () =
-    let state = generator 42
-    in
-    let (x, state) = extract_number state in
-    assert (0x5fe1dc66 == x);
-    let (x, state) = extract_number state in
-    assert (0xcbea3db3 == x);
-
-    let rec iter n (x, state) =
-        if n == 0
-        then x
-        else iter (n - 1) (extract_number state)
-    in
-    assert (0x1997f4d6 == (iter 10 (0, state)))
-;;
-*/
 func TestExtract(t *testing.T) {
 	state := Generator(42)
 	

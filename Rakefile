@@ -50,7 +50,6 @@ SETS.each do |n|
 	task run_set => [:build] do
 		sh "./#{n}"
 	end
-	p run_set
 	task :run => run_set
 
 	task :clean do

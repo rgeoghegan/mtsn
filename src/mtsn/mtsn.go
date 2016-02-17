@@ -8,6 +8,7 @@ import (
     "strings"
     "math"
     "sort"
+    "math/big"
 )
 
 func DecodeBase64(indata string) []byte {
@@ -148,4 +149,12 @@ func XorBytes(seqA []byte, seqB []byte) []byte {
 		output[i] = seqA[i] ^ seqB[i]
 	}
 	return output
+}
+
+func RandomNumber(start int, end int) int{
+	delta := end - start
+
+	index, err := rand.Int(rand.Reader, big.NewInt(int64(delta)))
+    if (err != nil) {panic(err)}
+    return int(index.Int64()) + start
 }
