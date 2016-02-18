@@ -68,7 +68,7 @@ func TestCtrStream(t *testing.T) {
 	key := []byte("YELLOW SUBMARINE")
 	expected := make([]byte, 16)
 
-	stream := ctrStream(nonce, key, 0)
+	stream := CtrStream(nonce, key, 0)
 	decoded, err := DecryptAesEbc(key, stream)
 	if (err != nil) {
 		t.Fatalf("Error in decrtypting: %s", err)
@@ -80,7 +80,7 @@ func TestCtrStream(t *testing.T) {
 		t.Errorf("Decoded is equal to %q", decoded)
 	}
 
-	stream = ctrStream(nonce, key, 1)
+	stream = CtrStream(nonce, key, 1)
 	decoded, err = DecryptAesEbc(key, stream)
 	if (err != nil) {
 		t.Fatalf("Error in decrtypting: %s", err)
@@ -91,7 +91,7 @@ func TestCtrStream(t *testing.T) {
 		t.Errorf("Decoded is equal to %q", decoded)
 	}
 
-	stream = ctrStream(nonce, key, 257)
+	stream = CtrStream(nonce, key, 257)
 	decoded, err = DecryptAesEbc(key, stream)
 	if (err != nil) {
 		t.Fatalf("Error in decrtypting: %s", err)

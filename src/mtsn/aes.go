@@ -78,7 +78,7 @@ func DecryptAesCbc(key []byte, iv []byte, inStr []byte) ([]byte, error) {
 	return output, nil
 }
 
-func ctrStream(nonce []byte, key []byte, count uint16) []byte {
+func CtrStream(nonce []byte, key []byte, count uint16) []byte {
 	output := make([]byte, 16)
 	copy(output, nonce)
 	binary.LittleEndian.PutUint16(output[8:16], count)
@@ -102,7 +102,7 @@ func CtrCoding(nonce []byte, key []byte, text []byte) []byte {
     output_i := 0
 
     for block_i := 0;; block_i++ {
-    	block := ctrStream(nonce, key, uint16(block_i))
+    	block := CtrStream(nonce, key, uint16(block_i))
     	for i := 0; i < len(block); i++ {
     		output[output_i] = text[output_i] ^ block[i]
     		output_i++
