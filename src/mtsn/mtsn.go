@@ -9,6 +9,7 @@ import (
     "math"
     "sort"
     "math/big"
+    "fmt"
 )
 
 func DecodeBase64(indata string) []byte {
@@ -157,4 +158,88 @@ func RandomNumber(start int, end int) int{
 	index, err := rand.Int(rand.Reader, big.NewInt(int64(delta)))
     if (err != nil) {panic(err)}
     return int(index.Int64()) + start
+}
+
+func Escape(input []byte) []byte {
+	res := bytes.Replace(input, []byte("\\"), []byte("\\\\"), -1)
+	res = bytes.Replace(res, []byte(";"), []byte("\\;"), -1)
+	res = bytes.Replace(res, []byte("="), []byte("\\="), -1)
+	return res
+}
+
+func ParseParamString(params string) (map[string]string, error) {
+	escaped := false
+	results := make(map[string]string)
+
+	if len(params) == 0 {
+		return results, nil
+	}
+
+	key := new(bytes.Buffer)
+	value := new(bytes.Buffer)
+
+	for i, c := range params {
+		if c == ';' || c == '=' {
+			if i == 0 {
+				return nil, fmt.Errorf("Params start with %v", c)
+			}
+
+			if escaped {
+				value.WriteRune(c)
+				escaped = false
+				continue
+			}
+
+			if c == '=' {
+				if key.Len() > 0 {
+					return nil, fmt.Errorf("Double '=' at pos %v", i)
+				}
+				if value.Len() == 0 {
+					return nil, fmt.Errorf("Zero length key at pos %v", i)
+				}
+
+				key = value
+				value = new(bytes.Buffer)
+			} else {
+				if key.Len() == 0 {
+					return nil, fmt.Errorf("Next block starts without '=' at pos %v", i)
+				}
+				results[key.String()] = value.String()
+				key = new(bytes.Buffer)
+				value = new(bytes.Buffer)
+			}
+		} else if c == '\\' {
+			if escaped {
+				value.WriteRune(c)
+			}
+			escaped = ! escaped
+		} else {
+			value.WriteRune(c)
+			escaped = false
+		}
+	}
+
+	if escaped {
+		return nil, fmt.Errorf("Params end with \\")
+	}
+	if key.Len() == 0 || value.Len() == 0 {
+		return nil, fmt.Errorf("Last block is incomplete.")
+	}
+	results[key.String()] = value.String() 
+
+	return results, nil
+}
+
+func ParseAdmin(params string) bool {
+	parsed, err := ParseParamString(params)
+	if (err != nil) { 
+		return false
+	}
+
+	value, found := parsed["admin"]
+	if ! found {
+		return false
+	}
+
+	return value == "true" 
 }

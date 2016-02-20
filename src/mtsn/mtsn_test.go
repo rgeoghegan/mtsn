@@ -152,3 +152,54 @@ func TestExtract(t *testing.T) {
 		t.Errorf("Eleventh extracted number is 0x%x", value)
 	}
 }
+
+func TestEscape(t *testing.T) {
+	var expectations []string = []string{
+		";\\=", "\\;\\\\\\=",
+	}
+
+	for i := 0; i < len(expectations); i += 2 {
+		result := Escape([]byte(expectations[i]))
+		if ! bytes.Equal(result, []byte(expectations[i+1])) {
+			t.Errorf("Expected %v, got %q instead", expectations[i+1], result)
+		}
+	}
+}
+
+func TestParseParamString(t *testing.T) {
+	parsed, err := ParseParamString("a=b;c=d")
+	if err != nil {panic(err)}
+	if parsed["a"] != "b" || parsed["c"] != "d" || len(parsed) != 2 {
+		t.Errorf(
+			"Got %d keys in parsed, a: %v, c: %v", len(parsed), parsed["a"], parsed["c"],
+		)
+	}
+
+	parsed, err = ParseParamString("a=b\\;;c=d")
+	if err != nil {panic(err)}
+	if "b;" != parsed["a"] {
+		t.Errorf("Got %v for key a", parsed["a"])
+	}
+}
+
+func TestParseAdmin(t *testing.T) {
+	testString := "a=b;admin=true;rory=cool"
+	if ! ParseAdmin(testString) {
+		t.Errorf("String %v is _not_ admin", testString)
+	}
+
+	testString = "a=b;admin=false;rory=cool"
+	if ParseAdmin(testString) {
+		t.Errorf("String %v _is_ admin", testString)
+	}
+
+	testString = "a=b;admn=true;rory=cool"
+	if ParseAdmin(testString) {
+		t.Errorf("String %v _is_ admin", testString)
+	}
+
+	testString = "a=b;admin==true;rory=cool"
+	if ParseAdmin(testString) {
+		t.Errorf("String %v _is_ admin", testString)
+	}
+}
