@@ -203,3 +203,30 @@ func TestParseAdmin(t *testing.T) {
 		t.Errorf("String %v _is_ admin", testString)
 	}
 }
+
+func TestSha1Mac(t *testing.T) {
+	expected := []byte("\xec\x9d\xbc\x02\x99M\x1d&p\x11\x8c\xbbo\xa3\xde\xdfT\xc0\x9f\xe2")
+	digest := Sha1Mac([]byte("YELLOW "), []byte("SUBMARINE"))
+	if ! bytes.Equal(expected, digest[0:20]) {
+		t.Errorf("Digest '%q' != expected '%q'", digest, expected)
+	}
+}
+
+func TestVerifySha1Mac(t *testing.T) {
+	key := []byte("YELLOW SUBMARINE")
+	text := []byte("Some Text")
+	digest := Sha1Mac(key, text)
+
+	if ! VerifySha1Mac(key, text, digest) {
+		t.Errorf("Comparing text dosn't work")
+	}
+
+	if VerifySha1Mac(key, []byte("Not Some Text"), digest) {
+		t.Errorf("Comparing against random text worked")
+	}
+
+	if VerifySha1Mac([]byte("SOME RANDOM KEY"), text, digest) {
+		t.Errorf("Using random key worked")
+	}
+}
+
