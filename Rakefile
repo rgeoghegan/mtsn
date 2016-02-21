@@ -3,7 +3,9 @@ TEST_PACKAGES = FileList["src/**/*_test.go"].map { |e|
 	name = e.pathmap("%n")
 	name[0,name.length - 5]
 }
-MTSN_FILES = FileList["src/mtsn/*.go"]
+
+LIBS = ["mtsn", "sha1hacks"]
+LIB_FILES = FileList[LIBS.map{|n| "src/#{n}/*.go"}]
 
 def go(args)
 	ENV['GOPATH'] = Dir.pwd
@@ -42,7 +44,7 @@ SETS.each do |n|
 	file n => FileList["src/#{n}/**/*.go"] do
 		go "build #{n}"
 	end
-	file n => MTSN_FILES
+	file n => LIB_FILES
 	task :build => n
 	run_set = "run#{n}".to_sym
 
