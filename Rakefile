@@ -1,11 +1,17 @@
 SETS = FileList["src/set*"].map { |e| e.pathmap("%n") }
-TEST_PACKAGES = FileList["src/**/*_test.go"].map { |e|
+
+
+LIBS = ["mtsn", "sha1hacks", "md4hacks"]
+LIB_FILES = FileList[LIBS.map{|n| "src/#{n}/*.go"}]
+
+my_packages = (LIBS.map{|n| "src/#{n}"} + SETS)
+
+TEST_PACKAGES = FileList[(LIBS + SETS).map{|n| "src/#{n}/**/*_test.go"}].map { |e|
 	name = e.pathmap("%n")
 	name[0,name.length - 5]
 }
 
-LIBS = ["mtsn", "sha1hacks"]
-LIB_FILES = FileList[LIBS.map{|n| "src/#{n}/*.go"}]
+EXTERN_LIBS = []
 
 def go(args)
 	ENV['GOPATH'] = Dir.pwd
@@ -13,7 +19,7 @@ def go(args)
 end
 
 desc "Build all the executables"
-task :build
+task :build => :deps
 
 desc "Run all the executables"
 task :run
@@ -56,5 +62,12 @@ SETS.each do |n|
 
 	task :clean do
 		rm n
+	end
+end
+
+desc "Install any third-party dependencies"
+task :deps do
+	EXTERN_LIBS.each do |n|
+		go("get #{n}")
 	end
 end
