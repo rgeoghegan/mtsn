@@ -230,3 +230,14 @@ func TestVerifySha1Mac(t *testing.T) {
 	}
 }
 
+func TestSha1HMAC(t *testing.T) {
+	key := []byte("YELLOW SUBMARINE")
+	text := []byte("Some Text")
+	expected := []byte("\xa1\xd8\x94?\x9d7'\xd5\x15\xa2*\xe9\xbc\xb24\x16\xd2J\x9e\"")
+
+	digest := Sha1HMAC(key, text)
+	if ! bytes.Equal(expected, digest) {
+		t.Errorf("Got digest %q for hash", digest)
+	}
+}
+
