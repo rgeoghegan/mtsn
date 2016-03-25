@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-func createState(previousValues []uint32) *mtsn.GeneratorState {
-	state := new(mtsn.GeneratorState)
+func createState(previousValues []uint32) *mtsn.MersenneRNGState {
+	state := new(mtsn.MersenneRNGState)
 
 	for i, n := range previousValues {
 		state.Mt[i] = mtsn.Unextract(n)
@@ -17,7 +17,7 @@ func createState(previousValues []uint32) *mtsn.GeneratorState {
 
 func Challenge23() {
 	seed := uint32(42)
-	state := mtsn.Generator(seed)
+	state := mtsn.MersenneRNG(seed)
 	first624Values := make([]uint32, 624)
 
 	for i := 0; i < 624; i++ {

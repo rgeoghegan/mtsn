@@ -24,7 +24,7 @@ func randomWait() {
 func findSeed(randomNumber uint32) (uint32, error) {
 	currentTime := uint32(time.Now().Unix()) + 5
 	for i := (currentTime - 210); i < currentTime; i++ {
-		state := mtsn.Generator(i)
+		state := mtsn.MersenneRNG(i)
 		if (state.Extract() == randomNumber) {
 			return i, nil
 		}
@@ -35,7 +35,7 @@ func findSeed(randomNumber uint32) (uint32, error) {
 func Challenge22() {
 	randomWait()
 	seed := uint32(time.Now().Unix())
-	state := mtsn.Generator(uint32(seed))
+	state := mtsn.MersenneRNG(uint32(seed))
 	randomNumber := state.Extract()
 	randomWait()
 

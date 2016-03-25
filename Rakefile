@@ -11,7 +11,7 @@ TEST_PACKAGES = FileList[(LIBS + SETS).map{|n| "src/#{n}/**/*_test.go"}].map { |
 	name[0,name.length - 5]
 }
 
-EXTERN_LIBS = []
+DEPS = ["github.com/mitsuse/progress-go"]
 
 def go(args)
 	ENV['GOPATH'] = Dir.pwd
@@ -74,7 +74,7 @@ end
 
 desc "Install any third-party dependencies"
 task :deps do
-	EXTERN_LIBS.each do |n|
+	DEPS.each do |n|
 		go("get #{n}")
 	end
 end

@@ -5,6 +5,7 @@ import (
 	"sha1hacks"
 )
 
+// Sha1Mac will produce a MAC digest of text, given a key.
 func Sha1Mac(key []byte, text []byte) [20]byte {
 	payload := make([]byte, len(key) + len(text))
 	copy(payload, key)
@@ -14,11 +15,13 @@ func Sha1Mac(key []byte, text []byte) [20]byte {
 	return digest
 }
 
+// VerifySha1Mac will verify a Sha1 mac digest, as produced by Sha1Mac.
 func VerifySha1Mac(key []byte, text []byte, origdigest [20]byte) bool {
 	digest := Sha1Mac(key, text)
 	return subtle.ConstantTimeCompare(digest[0:20], origdigest[0:20]) == 1
 }
 
+// Sha1Mac will produce an HMAC digest of text, given a key.
 func Sha1HMAC(key []byte, text []byte) []byte {
 	var paddedKey []byte
 	var digest [sha1hacks.Size]byte

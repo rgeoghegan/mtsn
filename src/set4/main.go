@@ -17,5 +17,6 @@ func main() {
 
 	if *slowArgPtr {
 		set4.Challenge31()
+		set4.Challenge32()
 	}
 }

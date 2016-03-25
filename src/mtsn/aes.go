@@ -8,6 +8,11 @@ import (
 	"encoding/binary"
 )
 
+
+// EncryptAesEbc will encrypt inStr using key to build an AES ebc
+// cipher.
+//
+// The key must be 16 bytes long, and inStr must match the block size.
 func EncryptAesEbc(key []byte, inStr []byte) ([]byte, error) {
 	cipher, err := aes.NewCipher(key)
 	if err != nil {return nil, err}
@@ -27,6 +32,10 @@ func EncryptAesEbc(key []byte, inStr []byte) ([]byte, error) {
 	return output, nil
 }
 
+// DecryptAesCbc will decrypt inStr using key to build an AES ebc
+// cipher.
+//
+// The key must be 16 bytes long, and inStr must match the block size.
 func DecryptAesEbc(key []byte, inStr []byte) ([]byte, error) {
 	cipher, err := aes.NewCipher(key)
 	if err != nil {return nil, err}
@@ -46,6 +55,10 @@ func DecryptAesEbc(key []byte, inStr []byte) ([]byte, error) {
 	return output, nil
 }
 
+// EncryptAesCbc will encrypt inStr using key and iv to build an AES cbc
+// cipher.
+//
+// Both iv and key must be 16 bytes long, and inStr must match the block size.
 func EncryptAesCbc(key []byte, iv []byte, inStr []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {return nil, err}
@@ -62,6 +75,10 @@ func EncryptAesCbc(key []byte, iv []byte, inStr []byte) ([]byte, error) {
 	return output, nil
 }
 
+// DecryptAesCbc will decrypt inStr using key and iv to build an AES cbc
+// cipher.
+//
+// Both iv and key must be 16 bytes long, and inStr must match the block size.
 func DecryptAesCbc(key []byte, iv []byte, inStr []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {return nil, err}
@@ -78,6 +95,10 @@ func DecryptAesCbc(key []byte, iv []byte, inStr []byte) ([]byte, error) {
 	return output, nil
 }
 
+// CtrStream will use key and nonce to produce a ctr stream of bytes count
+// bytes long.
+//
+// key must be 16 bytes long, nonce must be 8 bytes long.
 func CtrStream(nonce []byte, key []byte, count uint16) []byte {
 	output := make([]byte, 16)
 	copy(output, nonce)
@@ -89,6 +110,10 @@ func CtrStream(nonce []byte, key []byte, count uint16) []byte {
 	return encoded
 }
 
+//CtrCoding will use key and nonce to produce a ctr-encoded (or decoded)
+//version of text.
+//
+// key must be 16 bytes long, nonce must be 8 bytes long.
 func CtrCoding(nonce []byte, key []byte, text []byte) []byte {
 	/* Given
 	*

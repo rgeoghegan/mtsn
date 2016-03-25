@@ -104,7 +104,7 @@ func TestCtrStream(t *testing.T) {
 }
 
 func TestGenerator(t *testing.T) {
-	state := Generator(42)
+	state := MersenneRNG(42)
 	passes := state.Index == 624
 	passes = passes && state.Mt[0] == 42
 	passes = passes && state.Mt[1] == 0xb93c8a93
@@ -118,7 +118,7 @@ func TestGenerator(t *testing.T) {
 }
 
 func TestTwist(t *testing.T) {
-	state := Generator(42)
+	state := MersenneRNG(42)
 	state.Twist()
 	passes := state.Index == 0
 	passes = passes && 0x2b26e943 == state.Mt[0]
@@ -131,7 +131,7 @@ func TestTwist(t *testing.T) {
 }
 
 func TestExtract(t *testing.T) {
-	state := Generator(42)
+	state := MersenneRNG(42)
 	
 	value := state.Extract()
 	if (value != 0x5fe1dc66) {
@@ -241,3 +241,19 @@ func TestSha1HMAC(t *testing.T) {
 	}
 }
 
+func TestGetByte(t *testing.T) {
+	base := 0xaa00bb
+
+	if 0xbb != GetByte(base, 0) {
+		t.Errorf("Got 0x%x for byte 0", GetByte(base, 0))
+	}
+	if 0x0 != GetByte(base, 1) {
+		t.Errorf("Got 0x%x for byte 1", GetByte(base, 1))
+	}
+	if 0xaa != GetByte(base, 2) {
+		t.Errorf("Got 0x%x for byte 2", GetByte(base, 2))
+	}
+	if 0x0 != GetByte(base, 3) {
+		t.Errorf("Got 0x%x for byte 3", GetByte(base, 3))
+	}
+}

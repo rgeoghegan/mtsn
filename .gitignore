@@ -26,3 +26,5 @@ _testmain.go
 # Stuff specific to mstn
 /set*
 log
+src/github.com
+pkg

@@ -1,3 +1,4 @@
+// The mtsn package contains utility code that is shared among the challenges.
 package mtsn
 
 import (
@@ -12,6 +13,7 @@ import (
     "fmt"
 )
 
+// DecodeBase64 will decode the given Base64 encoded string into a []byte.
 func DecodeBase64(indata string) []byte {
 	decoded, err := base64.StdEncoding.DecodeString(indata)
 	// Not really interested in handling bad Base64 data, so just panic.
@@ -19,6 +21,7 @@ func DecodeBase64(indata string) []byte {
 	return decoded
 }
 
+// PadPkcs7 will pad the given []byte using Pkcs #7.
 func PadPkcs7(inStr []byte) []byte {
 	length := len(inStr)
 	extra := 16 - (length % 16)
@@ -30,6 +33,7 @@ func PadPkcs7(inStr []byte) []byte {
 	return padded.Bytes()
 }
 
+// StripPkcs7 will strip the padding as done by PadPkcs7.
 func StripPkcs7(inStr []byte) ([]byte, error) {
 	length := len(inStr)
 	padNum := int(inStr[length-1])
@@ -49,6 +53,8 @@ func StripPkcs7(inStr []byte) ([]byte, error) {
 	return inStr[0:length-padNum], nil
 }
 
+// GenerateRandomKey will generate a random sequece of 16 bytes, which can be
+// used as a key in different ciphers, etc.
 func GenerateRandomKey() []byte {
 	output := make([]byte, 16)
 	_, err := rand.Read(output)
@@ -69,11 +75,9 @@ var LetterFrequencies = map[string]float64 {
 
 var punctuation string = "!\"$&',.:;?"
 
+// ScoreAlphabet, given a text of letters (say an attempt at decoding), will return a
+// score that can be compared to other alphabets. Lower is better.
 func ScoreAlphabet(alphabet string) float64 {
-	/**
-	 * Given a text of letters (say an attempt at decoding), will return a
-	 * score that can be compared to other alphabets. Lower is better.
-	 */
 	counts := make(map[string]int)
 
 	for k := range LetterFrequencies {
@@ -114,10 +118,10 @@ func (a solutionScore) Len() int {return len(a)}
 func (a solutionScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a solutionScore) Less(i, j int) bool { return a[i].score < a[j].score }
 
+// SortedSolutions will xor text with all possible byte values, score each
+// xor'd text using ScoreAlphabet, and return the xor'ing bytes in order of
+// their score.
 func SortedSolutions(text []byte) []byte {
-	/* Xor's the text with all possible byte values, scores each byte value
-	and returns them in order. */
-
     var solutions solutionScore = make(solutionScore, 256)
     for i := 0; i < 256; i++ {
         solutions[i].cipher = byte(i)
@@ -138,8 +142,8 @@ func SortedSolutions(text []byte) []byte {
     return output
 }
 
+// XorBytes returns the shortest of the two sequences xor'd with the other.
 func XorBytes(seqA []byte, seqB []byte) []byte {
-	/* Returns the shortest of the two sequences xor'd with the other. */
 	minLength := len(seqA)
 	if len(seqB) < minLength {
 		minLength = len(seqB)
@@ -152,6 +156,7 @@ func XorBytes(seqA []byte, seqB []byte) []byte {
 	return output
 }
 
+// RandomNumber generates a random number between start and end.
 func RandomNumber(start int, end int) int{
 	delta := end - start
 
@@ -160,6 +165,7 @@ func RandomNumber(start int, end int) int{
     return int(index.Int64()) + start
 }
 
+// Escape will escape '\', ';' and '=' with a '\' in a []byte
 func Escape(input []byte) []byte {
 	res := bytes.Replace(input, []byte("\\"), []byte("\\\\"), -1)
 	res = bytes.Replace(res, []byte(";"), []byte("\\;"), -1)
@@ -167,6 +173,9 @@ func Escape(input []byte) []byte {
 	return res
 }
 
+// ParseParamString will take a string and parse it as key=value pairs joined
+// by ;. Either =, l, or \ can be escaped by adding another \ in front of it,
+// as per the Escape function.
 func ParseParamString(params string) (map[string]string, error) {
 	escaped := false
 	results := make(map[string]string)
@@ -230,6 +239,8 @@ func ParseParamString(params string) (map[string]string, error) {
 	return results, nil
 }
 
+// ParseAdmin will parse params as per ParseParamString, look for the key
+// 'admin' and make sure it's value is 'true'
 func ParseAdmin(params string) bool {
 	parsed, err := ParseParamString(params)
 	if (err != nil) { 
@@ -242,4 +253,9 @@ func ParseAdmin(params string) bool {
 	}
 
 	return value == "true" 
+}
+
+// GetByte extracts the given offset byte from int n.
+func GetByte(n int, offset uint) byte {
+	return byte(n >> (8 * offset))
 }

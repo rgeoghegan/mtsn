@@ -6,7 +6,7 @@ import (
 )
 
 func Challenge21() {
- 	generator := mtsn.Generator(1234)
+ 	generator := mtsn.MersenneRNG(1234)
  	value := generator.Extract()
  	fmt.Printf("Challenge 21: First random number %d\n", value)
  }

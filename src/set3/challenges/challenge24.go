@@ -17,15 +17,12 @@ func getByte(n uint32, x uint32) byte {
     return byte((n >> (x * 8)) & 0xff)
 }
 
+// ctrMt19937Encode produces the ctr-encoded version of the text using a
+// Mersenne rng
+//
+// The key is a 32 bit number and text can be as long as you want.
 func ctrMt19937Encode(key uint32, text []byte) []byte {
-    /* Given
-     *
-     *  key: 32 bit number
-     *  text: as long as you want
-     *
-     * produces the ctr-encoded version of the text using a Mersenne rng
-     */
-    state := mtsn.Generator(key)
+    state := mtsn.MersenneRNG(key)
     strLen := uint32(len(text))
     output := make([]byte, strLen)
 

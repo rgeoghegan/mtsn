@@ -22,13 +22,20 @@ const (
     lowerMask uint32 = 0x7fffffff
 )
 
-type GeneratorState struct {
+// State for a Mersenne RNG
+type MersenneRNGState struct {
     Mt [n]uint32
     Index uint32
 }
 
-func Generator(seed uint32) *GeneratorState {
-    state := new(GeneratorState)
+// MersenneRNG sets up a Mersenne RNG given a seed value
+//
+// Example:
+//
+//  rng := MersenneRNG(42)
+//  randomNumber := rng.Extract()
+func MersenneRNG(seed uint32) *MersenneRNGState {
+    state := new(MersenneRNGState)
     state.Mt[0] = seed
     for i := uint32(1); i < n; i++ {
         state.Mt[i] = f * (state.Mt[i-1] ^ (state.Mt[i-1] >> (w - 2))) + i
@@ -38,7 +45,8 @@ func Generator(seed uint32) *GeneratorState {
     return state
 }
 
-func (g *GeneratorState) Twist() {
+// Twist does the twist step on a MersenneRNGState.
+func (g *MersenneRNGState) Twist() {
     for i, v := range g.Mt {
         iu := uint32(i)
         x := (v & upperMask) + (g.Mt[(iu + 1) % n] & lowerMask)
@@ -52,7 +60,9 @@ func (g *GeneratorState) Twist() {
     g.Index = 0
 }
 
-func (g *GeneratorState) Extract() uint32 {
+// Extract produces a random number from a MersenneRNGState, doing the Twist
+// step if necessary.
+func (g *MersenneRNGState) Extract() uint32 {
     if g.Index >= n {
         g.Twist()
     }
@@ -67,48 +77,6 @@ func (g *GeneratorState) Extract() uint32 {
 
     return y
 }
-
-/*
-
-let unextract x =
-    (* Gets the inital value fed into extract_number *)
-    let mask size offset =
-        ((1 lsl size) - 1) lsl offset
-    in
-    let extract_block_left y block shift ander offset =
-        let mask = ((1 lsl shift) - 1) lsl offset
-        in
-        (((block lsl shift) land ander) lxor y) land mask
-    in
-
-    let extract_all_left y shift ander =
-        let rec iter offset block =
-            if offset > 32
-            then block
-            else iter
-                (offset + shift)
-                (block lxor (extract_block_left y block shift ander offset))
-        in
-        iter shift (y land ((1 lsl shift) - 1))
-    in
-    (* Step 4 *)
-    let y = x lxor (x lsr l) in
-
-    (* Step 3 *)
-    let y = extract_all_left y t c in
-
-    (* Step 2 *)
-    let y = extract_all_left y s b in
-
-    (* Step 1 *)
-    let p1 = y land (mask u (32 - u)) in
-    let p2 = (y lxor (p1 lsr u)) land
-        (mask u (32 - u - u)) in
-    let p3 = (y lxor (p2 lsr u)) land (mask 10 0) in
-
-    p1 lor p2 lor p3
-;;
-*/
 
 func mask(size uint32, offset uint32) uint32 {
     return ((uint32(1) << size) - uint32(1)) << offset
@@ -127,8 +95,9 @@ func extractAllLeft(y uint32, shift uint32, ander uint32) uint32 {
     return block
 }
 
+// Unextract, given a number produced by a mersenne RNG, gets the inital value
+// fed into the extract step.
 func Unextract(x uint32) uint32 {
-    // Gets the inital value fed into extract_number
     // Step 4
     y := x ^ (x >> l)
     // Step 3
