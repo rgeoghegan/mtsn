@@ -24,6 +24,12 @@ task :build => :deps
 desc "Run all the executables"
 task :run
 
+desc "Start doc server on port 8080"
+task :doc do
+	ENV['GOPATH'] = Dir.pwd
+	sh "godoc -http=:8080"
+end
+
 task :default => :run
 
 task :test do

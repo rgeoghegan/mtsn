@@ -22,7 +22,7 @@ func PConstant() *big.Int {
 }
 
 // Constants used in Diffie Hellman exchange
-var DiffieHellmanConstants = struct {
+var DFConstants = struct {
 	P *big.Int
 	G *big.Int
 }{
@@ -32,48 +32,44 @@ var DiffieHellmanConstants = struct {
 
 // Contains values used in one part of a Diffie-Hellman key exchange.
 type DiffieHellman struct {
+	P *big.Int
+	G *big.Int
 	MyPrivate *big.Int
 	MyPublic *big.Int
-	OtherPublic *big.Int
 }
 
 // NewDiffieHellman sets up the neccessary parts for one of two parties in a
 // Diffie-Hellman key exchange.
-func NewDiffieHellman() *DiffieHellman{
+func NewDiffieHellman(p *big.Int, g *big.Int) *DiffieHellman{
 	output := new(DiffieHellman)
 	var err error
 
+	output.P = p
+	output.G = g
 	output.MyPublic = new(big.Int)
 	output.MyPrivate, err = rand.Int(
 		rand.Reader,
-		DiffieHellmanConstants.P,
+		output.P,
 	)
 	if (err != nil) {panic(err)}
 
 	output.MyPublic.Exp(
-		DiffieHellmanConstants.G,
+		output.G,
 		output.MyPrivate,
-		DiffieHellmanConstants.P,
+		output.P,
 	)
 
 	return output
 }
 
-// Exchange will setup two DiffieHellman struct to start exchanging with each
-// other.
-func (d *DiffieHellman) Exchange(other *DiffieHellman) {
-	d.OtherPublic = other.MyPublic
-	other.OtherPublic = d.MyPublic
-}
-
 // SessionKey produces the session key the two parties of a Diffie-Hellman key
 // exchange share.
-func (d *DiffieHellman) SessionKey() *big.Int {
+func (d *DiffieHellman) SessionKey(otherPublic *big.Int) *big.Int {
 	var session *big.Int = new(big.Int)
 	session.Exp(
-		d.OtherPublic, 
+		otherPublic, 
 		d.MyPrivate,
-		DiffieHellmanConstants.P,
+		d.P,
 	)
 	return session
 }
