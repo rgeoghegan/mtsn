@@ -6,11 +6,17 @@ import (
 	"math/big"
 	"crypto/sha256"
 	"crypto/rand"
-	"crypto/subtle"
+	"crypto/hmac"
 )
 
-var G *big.Int = big.NewInt(int64(2)) 
-var K *big.Int = big.NewInt(int64(2))
+// Constants used in a Secure Remote Password exchange
+var SRP = struct {
+	G *big.Int
+	K *big.Int
+}{
+	big.NewInt(int64(2)),
+	big.NewInt(int64(3)),
+}
 
 type HashSha256 []byte
 
@@ -20,9 +26,9 @@ func (h HashSha256) Int() *big.Int {
 	return res
 }
 
-func (h HashSha256) Equal(other HashSha256) bool {
-	return subtle.ConstantTimeCompare(h, other) == 1
-}
+// func (h HashSha256) Equal(other HashSha256) bool {
+// 	return subtle.ConstantTimeCompare(h, other) == 1
+// }
 
 func HashStrings(strings ...[]byte) HashSha256 {
 	hash := sha256.New()
@@ -39,6 +45,13 @@ func HashTwoInts(a,b  *big.Int) HashSha256 {
 	return HashStrings(a.Bytes(), b.Bytes())
 }
 
+type SRPClientIntf interface {
+    Step1(server *SRPServer)
+    Step2(salt []byte, pubB *big.Int)
+    Step3()
+    Step4() []byte
+}
+
 type SRPClient struct {
 	email []byte
 	password []byte
@@ -47,7 +60,7 @@ type SRPClient struct {
 	pubA *big.Int
 	B *big.Int
 	Salt []byte
-	k []byte
+	K []byte
 }
 
 
@@ -84,7 +97,7 @@ func NewSRPServer(password []byte) *SRPServer {
 	x := HashStrings(res.salt, res.password)
 
 	res.v = new(big.Int)
-	res.v.Exp(G, x.Int(), DFConstants.P)
+	res.v.Exp(SRP.G, x.Int(), DFConstants.P)
 
 	var err error
 	res.b, err = rand.Int(rand.Reader, DFConstants.P)
@@ -97,22 +110,25 @@ func (c *SRPClient) Step1(server *SRPServer) {
 	server.email = c.email
 
 	c.pubA = new(big.Int)
-	c.pubA.Exp(G, c.a, DFConstants.P)
+	c.pubA.Exp(SRP.G, c.a, DFConstants.P)
 	server.A = c.pubA
 }
 
-func (s *SRPServer) Step2(client *SRPClient) {
-	client.Salt = s.salt
-
+func (s *SRPServer) Step2(client SRPClientIntf) {
 	// B = kv + g**b % N
 	i := new(big.Int)
-	i.Exp(G, s.b, DFConstants.P)
+	i.Exp(SRP.G, s.b, DFConstants.P)
 	
 	s.pubB = new(big.Int)
-	s.pubB.Mul(s.v, K)
+	s.pubB.Mul(s.v, SRP.K)
 	s.pubB.Add(s.pubB, i)
 
-	client.B = s.pubB
+    client.Step2(s.salt, s.pubB)
+}
+
+func (c *SRPClient) Step2(salt []byte, pubB *big.Int) {
+    c.Salt = salt
+    c.B = pubB
 }
 
 func (s *SRPServer) Step3() {
@@ -123,6 +139,11 @@ func (s *SRPServer) Step3() {
 	S.Exp(s.v, u, DFConstants.P) 	// I can mod N here because the final
 									// calculation is also mod N
 	S.Mul(S, s.A)
+
+	// We hit this bug (https://github.com/golang/go/issues/13973) in
+	// challenge 37 when s.A is equal to the NIST prime, so we throw an extra
+	// Mod here to try and reduce the size of the numbers
+	S.Mod(S, DFConstants.P)
 	S.Exp(S, s.b, DFConstants.P)
 
 	s.k = HashStrings(S.Bytes())
@@ -138,24 +159,25 @@ func (c *SRPClient) Step3() {
 	e.Add(e, c.a)
 
 	S := new(big.Int)
-	S.Exp(G, x, DFConstants.P)
-	S.Mul(S, K)
+	S.Exp(SRP.G, x, DFConstants.P)
+	S.Mul(S, SRP.K)
 	S.Sub(c.B, S)
 	S.Exp(S, e, DFConstants.P)
 
-	c.k = HashStrings(S.Bytes())
+	c.K = HashStrings(S.Bytes())
 }
 
 func (c *SRPClient) Step4() []byte {
-	return HashStrings(c.k, c.Salt)
+	mac := hmac.New(sha256.New, c.K)
+	return mac.Sum(c.Salt)
 }
 
-func (s *SRPServer) Step5(hash []byte) bool {
-	ourHash := HashStrings(s.k, s.salt)
-	return ourHash.Equal(hash)
+func (s *SRPServer) Step5(digest []byte) bool {
+	mac := hmac.New(sha256.New, s.k)
+	return hmac.Equal(mac.Sum(s.salt), digest)
 }
 
-func SRPExchange(server *SRPServer, client *SRPClient) bool {
+func SRPExchange(server *SRPServer, client SRPClientIntf) bool {
 	client.Step1(server)
 	server.Step2(client)
 
@@ -168,5 +190,5 @@ func SRPExchange(server *SRPServer, client *SRPClient) bool {
 func Challenge36() {
 	client := NewSRPClient([]byte("abe@example.com"), []byte("password"))
 	server := NewSRPServer([]byte("password"))
-	fmt.Printf("Challenge 36: works? %v\n", SRPExchange(server, client))
+	fmt.Printf("Challenge 36: Successfully exchanged? %v\n", SRPExchange(server, client))
 }
