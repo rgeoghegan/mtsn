@@ -26,10 +26,6 @@ func (h HashSha256) Int() *big.Int {
 	return res
 }
 
-// func (h HashSha256) Equal(other HashSha256) bool {
-// 	return subtle.ConstantTimeCompare(h, other) == 1
-// }
-
 func HashStrings(strings ...[]byte) HashSha256 {
 	hash := sha256.New()
 
@@ -43,6 +39,12 @@ func HashStrings(strings ...[]byte) HashSha256 {
 
 func HashTwoInts(a,b  *big.Int) HashSha256 {
 	return HashStrings(a.Bytes(), b.Bytes())
+}
+
+func MakeHmac(secret, value []byte) HashSha256 {
+	mac := hmac.New(sha256.New, secret)
+	mac.Write(value)
+	return mac.Sum(nil)
 }
 
 type SRPClientIntf interface {
@@ -168,13 +170,11 @@ func (c *SRPClient) Step3() {
 }
 
 func (c *SRPClient) Step4() []byte {
-	mac := hmac.New(sha256.New, c.K)
-	return mac.Sum(c.Salt)
+	return MakeHmac(c.K, c.Salt)
 }
 
 func (s *SRPServer) Step5(digest []byte) bool {
-	mac := hmac.New(sha256.New, s.k)
-	return hmac.Equal(mac.Sum(s.salt), digest)
+	return hmac.Equal(MakeHmac(s.k, s.salt), digest)
 }
 
 func SRPExchange(server *SRPServer, client SRPClientIntf) bool {

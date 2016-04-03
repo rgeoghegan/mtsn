@@ -156,7 +156,8 @@ func XorBytes(seqA []byte, seqB []byte) []byte {
 	return output
 }
 
-// RandomNumber generates a random number between start and end.
+// RandomNumber generates a random number from [start,end), so the range
+// including start but *not* including end.
 func RandomNumber(start int, end int) int{
 	delta := end - start
 
