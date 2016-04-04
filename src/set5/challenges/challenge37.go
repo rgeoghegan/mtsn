@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"crypto/rand"
+	"mtsn"
 )
 
 type SRPHackedClient struct {
@@ -38,8 +39,8 @@ func Challenge37() {
 	// client public key is 0
 	client := NewSRPHackedClient(
 		[]byte("abe@example.com"),
-		zero,
-		zero,
+		mtsn.Big.Zero,
+		mtsn.Big.Zero,
 	)
 	server := NewSRPServer([]byte("password"))
 	results[0] = SRPExchange(server, client)
@@ -48,7 +49,7 @@ func Challenge37() {
 	client = NewSRPHackedClient(
 		[]byte("abe@example.com"),
 		DFConstants.P,
-		zero,
+		mtsn.Big.Zero,
 	)
 	server = NewSRPServer([]byte("password"))
 	results[1] = SRPExchange(server, client)
@@ -59,7 +60,7 @@ func Challenge37() {
 	client = NewSRPHackedClient(
 		[]byte("abe@example.com"),
 		publicKey,
-		zero,
+		mtsn.Big.Zero,
 	)
 	server = NewSRPServer([]byte("password"))
 	results[2] = SRPExchange(server, client)

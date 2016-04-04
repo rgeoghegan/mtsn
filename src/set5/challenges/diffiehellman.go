@@ -3,6 +3,7 @@ package set5
 import (
 	"math/big"
 	"crypto/rand"
+	"mtsn"
 )
 
 func PConstant() *big.Int {
@@ -27,7 +28,7 @@ var DFConstants = struct {
 	G *big.Int
 }{
 	PConstant(),
-	big.NewInt(int64(2)),
+	mtsn.Big.Two,
 }
 
 // Contains values used in one part of a Diffie-Hellman key exchange.

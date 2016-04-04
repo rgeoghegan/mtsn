@@ -260,3 +260,17 @@ func ParseAdmin(params string) bool {
 func GetByte(n int, offset uint) byte {
 	return byte(n >> (8 * offset))
 }
+
+// Some small numbers as *big.Int. Please do not modify them, or else things
+// will fall appart.
+var Big = struct {
+	Zero *big.Int
+	One *big.Int
+	Two *big.Int
+	Three *big.Int
+}{
+	big.NewInt(int64(0)),
+	big.NewInt(int64(1)),
+	big.NewInt(int64(2)),
+	big.NewInt(int64(3)),
+}

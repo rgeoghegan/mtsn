@@ -14,8 +14,8 @@ var SRP = struct {
 	G *big.Int
 	K *big.Int
 }{
-	big.NewInt(int64(2)),
-	big.NewInt(int64(3)),
+	mtsn.Big.Two,
+	mtsn.Big.Three,
 }
 
 type HashSha256 []byte

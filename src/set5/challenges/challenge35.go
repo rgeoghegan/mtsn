@@ -8,9 +8,6 @@ import (
 	"mtsn"
 )
 
-var zero *big.Int = big.NewInt(int64(0))
-var one *big.Int = big.NewInt(int64(1))
-
 // HackGMitm is a Man-In-The-Middle which let's you play around with the value
 // for G within the ExhangeMessage protocol
 type HackGMitm struct {
@@ -72,7 +69,7 @@ func NewHackGMitmEven(partyA Party, partyB Party) *HackGMitmEven {
 	mitm.partyA = partyA
 	mitm.partyB = partyB
 	mitm.g = new(big.Int)
-	mitm.g.Sub(DFConstants.P, one)
+	mitm.g.Sub(DFConstants.P, mtsn.Big.One)
 	return mitm
 }
 
@@ -85,7 +82,7 @@ func (m *HackGMitmEven) SendMsg(otherPublicKey *big.Int) ([]byte, error) {
 
 	// Assume a*b is even
 	var decrypted []byte
-	evenKey := sha1hacks.Sum(one.Bytes())
+	evenKey := sha1hacks.Sum(mtsn.Big.One.Bytes())
 	
 	decrypted, err = mtsn.DecryptAesCbc(evenKey[0:16], iv, encrypted)
 	if (err != nil) {panic(err)}
@@ -119,15 +116,15 @@ func Challenge35() {
 	partyB = new(NormalParty)
 
 	// Try with g == 1
-	mitm = NewHackGMitm(partyA, partyB, one)
+	mitm = NewHackGMitm(partyA, partyB, mtsn.Big.One)
 
 	// A = g^a mod p
 	// B = 1^b mod p = 1
 	// Sa = 1^a mod p = 1
 	// If we give partyB 1 for the public key for partyA, they will share 1 as
 	// the same session key
-	mitm.partyAPublic = one
-	mitm.fakeSessionKey = one
+	mitm.partyAPublic = mtsn.Big.One
+	mitm.fakeSessionKey = mtsn.Big.One
 
 	// Note that I'm too lazy to implement the step two ACK in the challenge
 	// description as the protocol defined in challenge 34 does the same
@@ -150,8 +147,8 @@ func Challenge35() {
 	// Sa = 0^a mod p = 0
 	// If we give partyB 0 for the public key for partyA, they will share 0 as
 	// the same session key
-	mitm.partyAPublic = zero
-	mitm.fakeSessionKey = zero
+	mitm.partyAPublic = mtsn.Big.Zero
+	mitm.fakeSessionKey = mtsn.Big.Zero
 
 	err = ExchangeMessage(mitm, mitm)
 	if err != nil {panic(err)}

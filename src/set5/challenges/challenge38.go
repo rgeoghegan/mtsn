@@ -50,7 +50,7 @@ func NewSimpleSRPServer(password []byte) *SimpleSRPServer {
 	server.b, err = rand.Int(rand.Reader, DFConstants.P)
 	if (err != nil) {panic(err)}
 
-	int128 := new(big.Int).Lsh(one, 128)
+	int128 := new(big.Int).Lsh(mtsn.Big.One, 128)
 	server.U, err = rand.Int(rand.Reader, int128)
 	if (err != nil) {panic(err)}
 
@@ -138,8 +138,6 @@ func (s *MitmSimpleSRPServer) Step3 (clientHmac []byte) bool {
 }
 
 func (s *MitmSimpleSRPServer) CrackPassword() ([]byte, error) {
-	two := big.NewInt(int64(2))
-
 	for _, pass := range passwords {
 		// with salt="", B=2, u=1,
 		// x = SHA256(salt|password) = SHA256(password)
@@ -149,7 +147,7 @@ func (s *MitmSimpleSRPServer) CrackPassword() ([]byte, error) {
 		x := HashStrings(pass).Int()
 
 		S := new(big.Int)
-		S.Exp(two, x, DFConstants.P)
+		S.Exp(mtsn.Big.Two, x, DFConstants.P)
 		S.Mul(S, s.A)
 		S.Mod(S, DFConstants.P)
 
@@ -167,8 +165,8 @@ func (s *MitmSimpleSRPServer) CrackPassword() ([]byte, error) {
 func NewMitmSimpleSRPServer() *MitmSimpleSRPServer {
 	server := new(MitmSimpleSRPServer)
 	server.Salt = []byte("")
-	server.b = one // Server's public key will be 2**(b=1) % N == 2
-	server.U = one
+	server.b = mtsn.Big.One // Server's public key will be 2**(b=1) % N == 2
+	server.U = mtsn.Big.One
 
 	return server
 }
