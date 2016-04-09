@@ -9,4 +9,5 @@ func main() {
 	set5.Challenge37()
 	set5.Challenge38()
 	set5.Challenge39()
+	set5.Challenge40()
 }

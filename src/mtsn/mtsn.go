@@ -261,6 +261,21 @@ func GetByte(n int, offset uint) byte {
 	return byte(n >> (8 * offset))
 }
 
+// Function to print out a big int with scientific notation, i.e. 1 -> 1e0
+func FmtBigInt(n *big.Int) string {
+	toStr := n.String()
+	if len(toStr) < 15 {
+		return toStr
+	}
+
+	return fmt.Sprintf(
+		"%c.%se%d",
+		toStr[0],
+		toStr[1:10],
+		len(toStr) - 1,
+	)
+}
+
 // Some small numbers as *big.Int. Please do not modify them, or else things
 // will fall appart.
 var Big = struct {
