@@ -60,14 +60,14 @@ SETS.each do |n|
 	task :build => n
 	run_set = "run#{n}".to_sym
 
-	desc "Run set ##{n}"
+	desc "Run #{n}"
 	task run_set => [:build] do
 		sh "./#{n}"
 	end
 	task :run => run_set
 
 	run_set_slow = "run#{n}_slow".to_sym
-	desc "Run set ##{n} with slow flag"
+	desc "Run #{n} with slow flag"
 	task run_set_slow => [:build] do
 		sh "./#{n} --slow"
 	end
