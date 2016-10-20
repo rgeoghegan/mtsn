@@ -1,9 +1,9 @@
 package set5
 
 import (
-	"math/big"
-	"fmt"
 	"bytes"
+	"fmt"
+	"math/big"
 	"mtsn"
 )
 
@@ -19,12 +19,12 @@ func BinarySearchCubeRoot(n *big.Int) (*big.Int, error) {
 		cube.Mul(cube, top)
 
 		switch cube.Cmp(n) {
-			case -1 :
-				top.Add(top, delta)
-			case 0:
-				return top, nil
-			case 1:
-				top.Sub(top, delta)
+		case -1:
+			top.Add(top, delta)
+		case 0:
+			return top, nil
+		case 1:
+			top.Sub(top, delta)
 		}
 
 		if delta.Cmp(mtsn.Big.One) == 0 {
@@ -38,23 +38,25 @@ func BinarySearchCubeRoot(n *big.Int) (*big.Int, error) {
 	}
 }
 
-func crackMsg(clients []*RSAClient, encoded []*big.Int) (*big.Int, error) {
+func crackMsg(clients []*mtsn.RSAClient, encoded []*big.Int) (*big.Int, error) {
 	m := new(big.Int)
 	m.Set(mtsn.Big.One)
 	total := new(big.Int).Set(mtsn.Big.Zero)
-	
+
 	for i := 0; i < 3; i++ {
 		mod := (*big.Int)(clients[i])
 		m_i := new(big.Int)
 		m_i = m_i.Mul(
-			(*big.Int)(clients[(i+1) % 3]),
-			(*big.Int)(clients[(i+2) % 3]),
+			(*big.Int)(clients[(i+1)%3]),
+			(*big.Int)(clients[(i+2)%3]),
 		)
 		m.Mul(m, mod)
 
-		y_i, err := InvMod(m_i, mod)
-		if (err != nil) {return nil, err}
-		
+		y_i, err := mtsn.InvMod(m_i, mod)
+		if err != nil {
+			return nil, err
+		}
+
 		part := new(big.Int)
 		part.Mul(encoded[i], m_i)
 		part.Mul(part, y_i)
@@ -68,11 +70,11 @@ func crackMsg(clients []*RSAClient, encoded []*big.Int) (*big.Int, error) {
 func Challenge40() {
 	msg := []byte("secret")
 
-	clients := make([]*RSAClient, 3)
+	clients := make([]*mtsn.RSAClient, 3)
 	encoded := make([]*big.Int, 3)
 
 	for i := 0; i < 3; i++ {
-		rsa := NewRSA()
+		rsa := mtsn.NewRSA()
 		clients[i] = rsa.Client()
 		encoded[i] = clients[i].Encrypt(msg)
 	}
@@ -85,5 +87,5 @@ func Challenge40() {
 		decoded := cracked.Bytes()
 		fmt.Printf("Challenge 40: decrypted %q match? %v\n",
 			decoded, bytes.Equal(msg, decoded))
-	}	
+	}
 }
