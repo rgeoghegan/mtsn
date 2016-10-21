@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"mtsn"
+	"bytes"
 )
 
 type RSAVerifier mtsn.RSAClient
@@ -12,10 +13,10 @@ type RSAVerifier mtsn.RSAClient
 // Given a 1024 bit signature produced by RSASigner.Sign, verifies it
 // against the given text.
 func (r *RSAVerifier) Verify(text []byte, digest []byte) bool {
+	decryptedI := ((*mtsn.RSAClient)(r)).Encrypt(digest)
 	// Since we use big.Int for the rsa bit, it shaves off the leading 0,
 	// which makes a bit of a farce of the padding, but anyway.
-	decryptedI := ((*mtsn.RSAClient)(r)).Encrypt(digest)
-	decrypted := decryptedI.Bytes()
+	decrypted := append([]byte{0x00}, decryptedI.Bytes()...)
 	fmt.Printf("***** RORY src/set6/challenges/challenge42.go:52 decrypted %x\n", decrypted)
 
 	if decrypted[0] != 0x00 {
@@ -27,13 +28,24 @@ func (r *RSAVerifier) Verify(text []byte, digest []byte) bool {
 	if decrypted[2] != 0xff {
 		return false
 	}
+	var i int
+	for i = 3; i < len(decrypted); i++ {
+		if decrypted[i] != 0xff {
+			break
+		}
+	}
+	if decrypted[i] != 0x00 {
+		return false
+	}
+	i++
+	hash := decrypted[i:i+16]
 
 	hasher := md5.New()
 	hasher.Write(text)
-	md5hash := make([]byte, hasher.Size())
-	hasher.Sum(md5hash)
+	md5hash := make([]byte, 0, hasher.Size())
+	md5hash = hasher.Sum(md5hash)
 
-	return false
+	return bytes.Equal(md5hash, hash)
 }
 
 type RSASigner struct {
@@ -55,7 +67,7 @@ func (r *RSASigner) Sign(text []byte) []byte {
 	hasher := md5.New()
 	hasher.Write(text)
 	payload = hasher.Sum(payload)
-	fmt.Printf("***** RORY src/set6/challenges/challenge42.go:29 payload %x\n", payload)
+	fmt.Printf("***** RORY src/set6/challenges/challenge42.go:29 payload   %x\n", payload)
 	fmt.Printf("***** RORY src/set6/challenges/challenge42.go:29 key size %v\n",
 		((*big.Int)(r.rsa.Client())).BitLen())
 

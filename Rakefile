@@ -11,7 +11,10 @@ TEST_PACKAGES = FileList[(LIBS + SETS).map{|n| "src/#{n}/**/*_test.go"}].map { |
 	name[0,name.length - 5]
 }
 
-DEPS = ["github.com/mitsuse/progress-go"]
+DEPS = [
+    "github.com/mitsuse/progress-go",
+    "github.com/ALTree/bigfloat"
+]
 
 def go(args)
 	ENV['GOPATH'] = Dir.pwd
