@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	RSA_BITS int = 128
+	RSA_BITS int = 1024
 )
 
 // Public Exponent for any RSA math
@@ -46,6 +46,7 @@ func InvMod(a, n *big.Int) (*big.Int, error) {
 // can instantiate it through RSA.Client()
 type RSAClient big.Int
 
+// Encrypt a sequence of bytes as a big.Int
 func (r *RSAClient) Encrypt(msg []byte) *big.Int {
 	c := new(big.Int)
 	c.SetBytes(msg)
