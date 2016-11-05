@@ -1,8 +1,15 @@
 package main
 
-import "set6/challenges"
+import (
+	"mtsn"
+	"set6/challenges"
+)
 
 func main() {
-	set6.Challenge41()
-	set6.Challenge42()
+	challenges := make(mtsn.ChallengeList)
+	challenges["41"] = set6.Challenge41
+	challenges["42"] = set6.Challenge42
+	challenges["43"] = set6.Challenge43
+
+	challenges.Run()
 }
