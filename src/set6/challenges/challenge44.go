@@ -92,28 +92,26 @@ func FindFirstDuplicateR(payloads []*DSAPayload) (*DSAPayload, *DSAPayload) {
 	panic(fmt.Errorf("Cannot find matching r's"))
 }
 
-func CrackSignatureList(payloads []*DSAPayload) *big.Int {
+func CrackSignatureList(dsa *DSA, payloads []*DSAPayload) *big.Int {
 	// If two signatures share the same R, it's because they share the same K
 	first, second := FindFirstDuplicateR(payloads)
 
 	s := new(big.Int)
-	s.Sub(first.sig.S, second.sig.S).Mod(s, q)
-	sInv, err := mtsn.InvMod(s, q)
-	if err != nil {
-		panic(err)
-	}
+	s.Sub(first.sig.S, second.sig.S).Mod(s, dsa.Q)
+	sInv := InvModPanic(s, dsa.Q)
 
 	k := new(big.Int)
-	k.Sub(first.m, second.m).Mod(k, q).Mul(k, sInv).Mod(k, q)
+	k.Sub(first.m, second.m).Mod(k, dsa.Q).Mul(k, sInv).Mod(k, dsa.Q)
 
-	cracker := NewDSACracker(first.msg, first.sig)
+	cracker := NewDSACracker(dsa, first.msg, first.sig)
 
 	return cracker.CrackWithLeakedK(k)
 }
 
 func Challenge44() {
 	signatures := parseChallenge44Signatures()
-	privateKey := CrackSignatureList(signatures)
+	dsa := NewDSA()
+	privateKey := CrackSignatureList(dsa, signatures)
 	fingerprint := Sha1HexRepr(privateKey)
 
 	if fingerprint != "ca8f6f7c66fa362d40760d135b763eb8527d3d52" {

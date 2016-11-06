@@ -11,6 +11,7 @@ func main() {
 	challenges["42"] = set6.Challenge42
 	challenges["43"] = set6.Challenge43
 	challenges["44"] = set6.Challenge44
+	challenges["45"] = set6.Challenge45
 
 	challenges.Run()
 }

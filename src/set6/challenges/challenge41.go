@@ -26,6 +26,15 @@ func (o *Oracle) Decrypt(in *big.Int) ([]byte, error) {
 
 }
 
+// Exactly like mtsn.InvMod, but will panic if it cannot find an inverse
+func InvModPanic(a, n *big.Int) *big.Int {
+	i, err := mtsn.InvMod(a, n)
+	if err != nil {
+		panic(err)
+	}
+	return i
+}
+
 func Crack(oracle *Oracle, client *mtsn.RSAClient, encrypted *big.Int) []byte {
 	s := mtsn.Big.Three
 	n := (*big.Int)(client)
@@ -46,10 +55,7 @@ func Crack(oracle *Oracle, client *mtsn.RSAClient, encrypted *big.Int) []byte {
 	//       P'
 	// P = -----  mod N
 	//      S
-	p, err := mtsn.InvMod(s, n)
-	if err != nil {
-		panic(err)
-	}
+	p := InvModPanic(s, n)
 	p.Mul(p, pPrime)
 	p.Mod(p, n)
 	return p.Bytes()
