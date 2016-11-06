@@ -1,7 +1,6 @@
 package set6
 
 import (
-	//"bytes"
 	"crypto/rand"
 	"crypto/sha1"
 	"fmt"
@@ -152,6 +151,14 @@ func CrackWithLimitedK(cracker *DSACracker) *big.Int {
 	panic(fmt.Errorf("Cannot find matching k below %d?", maxK))
 }
 
+// Given a big.Int, returns the hex version of the sha1 hash of the hex
+// version of that number
+func Sha1HexRepr(n *big.Int) string {
+	asHexBytes := []byte(fmt.Sprintf("%x", n.Bytes()))
+	fingerprint := sha1.Sum(asHexBytes)
+	return fmt.Sprintf("%x", fingerprint)
+}
+
 func Challenge43() {
 	var signer *DSASigner = (*DSASigner)(RandomNumberBelowQ())
 
@@ -181,9 +188,8 @@ func Challenge43() {
 
 	cracker = NewDSACracker(msg, signature)
 	crackedSecretKey = CrackWithLimitedK(cracker)
-	asHexBytes := []byte(fmt.Sprintf("%x", crackedSecretKey.Bytes()))
-	fingerprint := sha1.Sum(asHexBytes)
-	if "0954edd5e0afe5542a4adf012611a91912a3ec16" != fmt.Sprintf("%x", fingerprint) {
+	fingerprint := Sha1HexRepr(crackedSecretKey)
+	if "0954edd5e0afe5542a4adf012611a91912a3ec16" != fingerprint {
 		panic(fmt.Errorf("Got %x as a fingerprint", fingerprint))
 	}
 

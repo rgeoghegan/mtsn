@@ -294,12 +294,29 @@ var Big = struct {
 	big.NewInt(int64(3)),
 }
 
+// Converts a hex incoded number into a *big.Int
 func HexBigInt(number string) *big.Int {
 	replacer := strings.NewReplacer("\t", "", " ", "", "\n", "", "\r", "")
 	clean := replacer.Replace(number)
 	output := new(big.Int)
 
 	count, err := fmt.Sscanf(clean, "%x", output)
+	if err != nil {
+		panic(err)
+	}
+	if count != 1 {
+		panic(fmt.Errorf("Expecting one number, got %d instead", count))
+	}
+	return output
+}
+
+// Converts a base 10 incoded number into a *big.Int
+func DecBigInt(number string) *big.Int {
+	replacer := strings.NewReplacer("\t", "", " ", "", "\n", "", "\r", "")
+	clean := replacer.Replace(number)
+	output := new(big.Int)
+
+	count, err := fmt.Sscanf(clean, "%d", output)
 	if err != nil {
 		panic(err)
 	}
